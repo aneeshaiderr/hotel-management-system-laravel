@@ -22,8 +22,17 @@
 
                 <!-- Direct href use kiya -->
                 <a href="/booking" class="bk-btn text-center">Booking Now</a>
-                <a href="register" class="bk-btn text-center">Signup Now</a>
-                <a href="/login" class="bk-btn text-center">Login</a>
+                @guest
+                    <a href="{{ route('register') }}" class="bk-btn text-center">Signup Now</a>
+                    <a href="{{ route('login') }}" class="bk-btn text-center">Login</a>
+                @endguest
+                @auth
+                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="bk-btn text-center border-0" style="background: none;">Logout</button>
+                    </form>
+                @endauth
+
             </div>
         </div>
     </div>
@@ -48,7 +57,17 @@
                 <button class="sidebar-close" data-bs-toggle="collapse" data-bs-target="#mainNav">&times;</button>
 
                 <!-- Direct href -->
-                <a href="/booking" class="bk-btn btn text-center mb-3">Booking Now</a>
+                <a href="/booking" class="bk-btn btn text-center mb-1">Booking Now</a>
+                @guest
+                    <a href="{{ route('register') }}" class="bk-btn btn text-center mb-1">Signup Now</a>
+                    <a href="{{ route('login') }}" class="bk-btn btn text-center mb-1">Login</a>
+                @endguest
+                @auth
+                    <form method="POST" action="{{ route('logout') }}" class="d-block mb-1">
+                        @csrf
+                        <button type="submit" class="bk-btn btn text-center w-100 border-0" style="background: none;">Logout</button>
+                    </form>
+                @endauth
 
                 <ul class="navbar-nav ms-auto align-items-start gap-4 p-4">
 

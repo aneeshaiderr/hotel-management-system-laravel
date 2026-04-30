@@ -39,6 +39,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'super-admin', // Defaulting to super-admin for testing as requested
         ]);
 
         event(new Registered($user));

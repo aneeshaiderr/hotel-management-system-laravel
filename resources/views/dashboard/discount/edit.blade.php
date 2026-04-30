@@ -1,0 +1,102 @@
+<x-app-layout :showDefaultNavigation="false">
+<div class="main-content d-flex flex-column min-vh-100">
+	<div class="container py-5">
+		<main>
+			<div class="mx-auto max-w-4xl py-7 px-7">
+				<h5 class="fw-bold mb-4">Edit Discount</h5>
+
+				<form id="editDiscountForm">
+					@csrf
+					<input type="hidden" name="id" value="{{ $discount->id }}">
+
+					{{-- Discount Type --}}
+					<div class="mb-4">
+						<label for="discount_type" class="form-label fw-bold">Discount Type</label>
+						<select name="discount_type" id="discount_type" class="form-control" required>
+							<option value="">Select Type</option>
+							<option value="percentage" @if(strtolower($discount->discount_type) == 'percentage') selected @endif>Percentage</option>
+							<option value="amount" @if(strtolower($discount->discount_type) == 'amount') selected @endif>Amount</option>
+						</select>
+					</div>
+
+					{{-- Discount Name --}}
+					<div class="mb-4">
+						<label for="discount_name" class="form-label fw-bold">Discount Name</label>
+						<input type="text" name="discount_name" id="discount_name" class="form-control" placeholder="Enter discount name" required value="{{ $discount->discount_name }}">
+					</div>
+
+					{{-- Discount Value --}}
+					<div class="mb-4">
+						<label for="value" class="form-label fw-bold">Discount Value</label>
+						<input type="number" name="value" id="value" class="form-control" placeholder="Enter discount value" step="0.01" required value="{{ $discount->value }}">
+					</div>
+
+					{{-- Start Date --}}
+					<div class="mb-4">
+						<label for="start_date" class="form-label fw-bold">Start Date</label>
+						<input type="date" name="start_date" id="start_date" class="form-control" required value="{{ $discount->start_date }}">
+					</div>
+
+					{{-- End Date --}}
+					<div class="mb-4">
+						<label for="end_date" class="form-label fw-bold">End Date</label>
+						<input type="date" name="end_date" id="end_date" class="form-control" required value="{{ $discount->end_date }}">
+					</div>
+
+					{{-- Status --}}
+					<div class="mb-4">
+						<label for="status" class="form-label fw-bold">Status</label>
+						<select name="status" id="status" class="form-control" required>
+							<option value="active" @if(strtolower($discount->status) == 'active') selected @endif>Active</option>
+							<option value="inactive" @if(strtolower($discount->status) == 'inactive') selected @endif>Inactive</option>
+						</select>
+					</div>
+
+					{{-- Buttons --}}
+					<div class="mt-6 d-flex justify-content-end gap-2">
+						<a href="{{ url('discount') }}" class="btn btn-secondary">Back</a>
+						<button type="submit" id="updateBtn" class="btn btn-success" style="background-color:#16a34a;" onmouseover="this.style.backgroundColor='#15803d'" onmouseout="this.style.backgroundColor='#16a34a'">
+							Update Discount
+						</button>
+					</div>
+				</form>
+
+			</div>
+		</main>
+	</div>
+</div>
+
+<script>
+	$(function () {
+		$('#editDiscountForm').on('submit', function (e) {
+			e.preventDefault();
+			var form = $(this);
+
+			$.ajax({
+				url: "{{ url('discount/update') }}",
+				type: "POST",
+				data: form.serialize(),
+				dataType: "json",
+				beforeSend: function () {
+					$('#updateBtn').prop('disabled', true).text('Updating...');
+				},
+				success: function (response) {
+					if (response.status === 'success') {
+						alert(response.message || 'Discount updated successfully!');
+						window.location.href = "{{ url('discount') }}";
+					} else {
+						alert(response.message || 'Update failed!');
+					}
+				},
+				error: function (xhr) {
+					console.error(xhr.responseText);
+					alert('Server Error!');
+				},
+				complete: function () {
+					$('#updateBtn').prop('disabled', false).text('Update Discount');
+				}
+			});
+		});
+	});
+</script>
+</x-app-layout>

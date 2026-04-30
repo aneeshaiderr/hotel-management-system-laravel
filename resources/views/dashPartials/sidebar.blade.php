@@ -1,61 +1,74 @@
-<div class="content-wrapper">
-    <aside id="sidebar" class="text-white vh-100 p-3">
-        <div class="text-center mb-4">
-            <h5 class="fw-bold mb-1">Hotel Reservation</h5>
-            <small>{{ auth()->user()?->name }}</small>
+@php
+    $current_uri = $current_uri ?? request()->segment(1);
+
+    // Section expansion logic
+    $pages_routes = ['user', 'hotel', 'rooms', 'services', 'discount', 'reservation', 'payment', 'permission'];
+    $is_pages_section = in_array($current_uri, $pages_routes);
+@endphp
+
+<aside id="sidebar" class="vh-100">
+    <!-- Sidebar Brand -->
+    <div class="sidebar-brand text-center">
+        <h5 class="sidebar-brand-text fw-bold">Hotel Reservation</h5>
+    </div>
+
+    <!-- User Profile Section -->
+    <div class="sidebar-user text-center">
+        <img src="{{ asset('assets_dashboard/img/avatar.jpg') }}" class="rounded-circle img-fluid mb-2" alt="User Avatar" style="width:60px; height:60px;">
+        <div class="sidebar-user-title">
+            <h6 class="mb-0">Super Admin</h6>
+            <small class="sidebar-user-subtitle">Administrator</small>
         </div>
+    </div>
 
-        <hr class="border-secondary">
+    <!-- Sidebar Navigation -->
+    <ul class="sidebar-nav">
 
-        <ul class="nav flex-column">
-            <li class="nav-item mb-1">
-                <a href="{{ route('dashboard') }}"
-                    class="nav-link text-white {{ request()->routeIs('dashboard') ? 'active bg-dark text-white' : '' }}">
-                    <i class="fas fa-gauge me-2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item mb-1">
-                <a href="{{ route('profile.edit') }}"
-                    class="nav-link text-white {{ request()->routeIs('profile.*') ? 'active bg-dark text-white' : '' }}">
-                    <i class="fas fa-user me-2"></i> Profile
-                </a>
-            </li>
-            <li class="nav-item mb-1">
-                <a href="{{ route('dashboard') }}"
-                    class="nav-link text-white {{ request()->routeIs('dashboard') ? 'active bg-dark text-white' : '' }}">
-                    <i class="fas fa-table me-2"></i> Rooms DataTable
-                </a>
-            </li>
-            <li class="nav-item mb-1">
-                <a href="{{ url('/') }}"
-                    class="nav-link text-white {{ request()->is('/') ? 'active bg-dark text-white' : '' }}">
-                    <i class="fas fa-house me-2"></i> Home
-                </a>
-            </li>
-            <li class="nav-item mb-1">
-                <a href="{{ url('/room') }}"
-                    class="nav-link text-white {{ request()->is('room') ? 'active bg-dark text-white' : '' }}">
-                    <i class="fas fa-bed me-2"></i> Rooms Page
-                </a>
-            </li>
-            <li class="nav-item mb-1">
-                <a href="{{ url('/about') }}"
-                    class="nav-link text-white {{ request()->is('about') ? 'active bg-dark text-white' : '' }}">
-                    <i class="fas fa-circle-info me-2"></i> About
-                </a>
-            </li>
-            <li class="nav-item mb-1">
-                <a href="{{ url('/news') }}"
-                    class="nav-link text-white {{ request()->is('news') ? 'active bg-dark text-white' : '' }}">
-                    <i class="fas fa-newspaper me-2"></i> News
-                </a>
-            </li>
-            <li class="nav-item mb-1">
-                <a href="{{ url('/contact') }}"
-                    class="nav-link text-white {{ request()->is('contact') ? 'active bg-dark text-white' : '' }}">
-                    <i class="fas fa-envelope me-2"></i> Contact
-                </a>
-            </li>
-        </ul>
-    </aside>
-</div>
+        <!-- Dashboard Direct Link -->
+        <li class="sidebar-item">
+            <a href="{{ route('dashboard') }}" class="sidebar-link {{ $current_uri == 'dashboard' ? 'active' : '' }}">
+                <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+            </a>
+        </li>
+
+        <!-- Pages Section -->
+        <li class="sidebar-item">
+            <a class="sidebar-link" 
+               data-bs-toggle="collapse" 
+               data-bs-target="#pages" 
+               aria-expanded="true">
+                <i class="fas fa-th-large"></i> <span>Pages</span>
+            </a>
+            <ul id="pages" class="sidebar-dropdown list-unstyled show">
+                <li class="sidebar-item">
+                    <a href="{{ route('dashboard.user') }}" class="sidebar-link {{ $current_uri == 'user' ? 'active' : '' }}">Users</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('dashboard.hotel') }}" class="sidebar-link {{ $current_uri == 'hotel' ? 'active' : '' }}">Hotels</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('dashboard.rooms') }}" class="sidebar-link {{ $current_uri == 'rooms' ? 'active' : '' }}">Rooms</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('dashboard.services') }}" class="sidebar-link {{ $current_uri == 'services' ? 'active' : '' }}">Services</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('dashboard.discount') }}" class="sidebar-link {{ $current_uri == 'discount' ? 'active' : '' }}">Discounts</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('dashboard.reservation') }}" class="sidebar-link {{ $current_uri == 'reservation' ? 'active' : '' }}">Reservations</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('dashboard.payment') }}" class="sidebar-link {{ $current_uri == 'payment' ? 'active' : '' }}">Payments</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('dashboard.permission') }}" class="sidebar-link {{ $current_uri == 'permission' ? 'active' : '' }}">Permissions</a>
+                </li>
+            </ul>
+        </li>
+
+    </ul>
+</aside>
+
+
+
