@@ -1,11 +1,13 @@
 <x-app-layout :showDefaultNavigation="false">
     <div class="container py-5">
             <h5 class="ps-2">Users</h5>
+            @can('isSuperAdmin')
             <div class="mb-3">
                 <a href="{{ url('user/create') }}" class="btn btn-sm btn-success">
                     + Create User
                 </a>
             </div>
+            @endcan
 
             <div class="row g-3 align-items-start">
                 <!-- Users Table Column -->
@@ -90,21 +92,26 @@
                             data: 'id',
                             orderable: false,
                             render: function (id) {
-                                return `
-                                    <div class="d-flex">
-                                        <a href="{{ url('user/edit') }}/${id}" class="btn btn-sm btn-primary me-1">View</a>
-                                        <form method="post"
-                                              action="{{ url('user/delete') }}"
-                                              class="d-inline m-0"
-                                              onsubmit="return confirm('Are you sure?')">
-                                            @csrf
-                                            <input type="hidden" name="id" value="${id}">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
+                                let actions = `<div class="d-flex">`;
+                                actions += `<a href="{{ url('user/edit') }}/${id}" class="btn btn-sm btn-primary me-1">View</a>`;
+                                
+                                @can('isSuperAdmin')
+                                actions += `
+                                    <form method="post"
+                                          action="{{ url('user/delete') }}"
+                                          class="d-inline m-0"
+                                          onsubmit="return confirm('Are you sure?')">
+                                        @csrf
+                                        <input type="hidden" name="id" value="${id}">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            Delete
+                                        </button>
+                                    </form>
                                 `;
+                                @endcan
+                                
+                                actions += `</div>`;
+                                return actions;
                             }
                         }
                     ]

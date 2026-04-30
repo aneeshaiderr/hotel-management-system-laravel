@@ -54,6 +54,8 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+Route::get('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->middleware('auth');
     Route::get('/dashboard', function () {
         $current_uri = request()->segment(1) ?: 'dashboard';
         return view('dashboard', compact('current_uri'));

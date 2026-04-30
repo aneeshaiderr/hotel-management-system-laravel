@@ -11,6 +11,9 @@ use App\Models\Room;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
+
 class ReservationController extends Controller
 {
     public function index()
@@ -25,23 +28,29 @@ class ReservationController extends Controller
             abort(404);
         }
 
-        $query = DB::table('reservations as r')
-            ->select(
-                'r.id', 'r.hotel_code', 'r.room_id', 'r.check_in', 'r.check_out', 'r.status',
-                'u.email as email', 'h.hotel_name', 'd.discount_name'
-            )
-            ->leftJoin('users as u', 'r.user_id', '=', 'u.id')
-            ->leftJoin('hotels as h', 'r.hotel_id', '=', 'h.id')
-            ->leftJoin('discounts as d', 'r.discount_id', '=', 'd.id')
-            ->whereNull('r.deleted_at');
+        $query = Reservation::with(['user', 'hotel', 'discount']);
 
-        return DataTables::query($query)
+        // If not super-admin or staff, only show their own reservations
+        if (Gate::denies('isStaff')) {
+            $query->where('user_id', Auth::id());
+        }
+
+        return DataTables::eloquent($query)
+            ->addColumn('email', function($row) {
+                return $row->user ? $row->user->email : '';
+            })
+            ->addColumn('hotel_name', function($row) {
+                return $row->hotel ? $row->hotel->hotel_name : '';
+            })
+            ->addColumn('discount_name', function($row) {
+                return $row->discount ? $row->discount->discount_name : '';
+            })
             ->toJson();
     }
 
     public function create()
     {
-        $users = User::all();
+        $users = Gate::allows('isStaff') ? User::all() : User::where('id', Auth::id())->get();
         $hotels = Hotel::all();
         $rooms = Room::all();
         $discounts = Discount::all();
@@ -66,20 +75,28 @@ class ReservationController extends Controller
         // guest_id is required by DB schema
         $validatedData['guest_id'] = $validatedData['user_id'];
 
-        Reservation::createReservation($validatedData);
+        $reservation = new Reservation();
+        $reservation->fill($validatedData);
+        $reservation->save();
 
         return redirect()->route('dashboard.reservation')->with('success', 'Reservation created successfully');
     }
 
     public function edit($id)
     {
-        $reservation = Reservation::getReservationById($id);
+        $reservation = Reservation::with(['user', 'hotel', 'discount'])->find($id);
         
         if (!$reservation) {
             return redirect()->route('dashboard.reservation')->with('error', 'Reservation not found');
         }
 
-        $users = User::all();
+        // Only staff/admin can edit reservations, or users can edit their own (if you want)
+        // Following user request: users can create, but management is usually for staff
+        if (Gate::denies('isStaff') && $reservation->user_id != Auth::id()) {
+            abort(403);
+        }
+
+        $users = Gate::allows('isStaff') ? User::all() : User::where('id', Auth::id())->get();
         $hotels = Hotel::all();
         $rooms = Room::all();
         $discounts = Discount::all();
@@ -105,15 +122,22 @@ class ReservationController extends Controller
 
         $validatedData['guest_id'] = $validatedData['user_id'];
 
-        Reservation::updateReservation($id, $validatedData);
+        $reservation = Reservation::find($id);
+        if ($reservation) {
+            $reservation->update($validatedData);
+        }
 
         return redirect()->route('dashboard.reservation')->with('success', 'Reservation updated successfully');
     }
 
     public function delete(Request $request)
     {
+        Gate::authorize('isStaff');
         $id = $request->input('id');
-        Reservation::softDeleteById($id);
+        $reservation = Reservation::find($id);
+        if ($reservation) {
+            $reservation->delete();
+        }
 
         return redirect()->route('dashboard.reservation')->with('success', 'Reservation deleted successfully');
     }

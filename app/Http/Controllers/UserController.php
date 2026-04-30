@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
+use Illuminate\Support\Facades\Gate;
 use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
@@ -16,7 +17,7 @@ class UserController extends Controller
     {
         $user = Auth::user();
         
-        // Normal user view
+        // Everyone can see this page, but the view will handle what to show
         return view('dashboard.user.index', [
             'user' => $user,
         ]);
@@ -28,24 +29,31 @@ class UserController extends Controller
             abort(404);
         }
 
-        $users = User::query()->select([
+        $query = User::query()->select([
             'id',
             'username',
             'name',
             'email',
         ]);
 
-        return DataTables::eloquent($users)
+        // If not super-admin or staff, only show self
+        if (Gate::denies('isStaff')) {
+            $query->where('id', Auth::id());
+        }
+
+        return DataTables::eloquent($query)
             ->toJson();
     }
 
     public function create()
     {
+        Gate::authorize('isSuperAdmin');
         return view('dashboard.user.create');
     }
 
     public function store(Request $request)
     {
+        Gate::authorize('isSuperAdmin');
         $validator = Validator::make($request->all(), [
             'username'   => 'required|min:3',
             'name'       => 'required',
@@ -64,10 +72,16 @@ class UserController extends Controller
         }
 
         try {
-            $data = $request->only(['username', 'name', 'email']);
-            $data['password'] = Hash::make($request->input('password'));
+            $user = new User();
+            $user->username = $data['username'] ?? '';
+            $user->name     = $data['name'];
+            $user->email    = $data['email'];
+            $user->password = Hash::make($request->input('password'));
+            $user->status   = 1;
+            $user->role     = $request->input('role', 'user');
+            $user->save();
 
-            $userId = User::createUser($data);
+            $userId = $user->id;
 
             if ($request->ajax()) {
                 return response()->json([
@@ -90,7 +104,12 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        $user = User::getUserWithInfo($id);
+        // Users can only edit themselves, Super Admins can edit anyone
+        if (Gate::denies('isSuperAdmin') && Auth::id() != $id) {
+            abort(403);
+        }
+
+        $user = User::select('id', 'username', 'name', 'email')->find($id);
 
         if (!$user) {
             return redirect('/user')->with('error', 'User not found');
@@ -101,6 +120,12 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
+        $id = $request->input('id');
+        
+        // Users can only update themselves, Super Admins can update anyone
+        if (Gate::denies('isSuperAdmin') && Auth::id() != $id) {
+            abort(403);
+        }
         $validator = Validator::make($request->all(), [
             'id'         => 'required|integer',
             'username'   => 'required|min:3',
@@ -122,7 +147,17 @@ class UserController extends Controller
         $data = $request->only(['username', 'name', 'email']);
 
         try {
-            $success = User::updateUserWithInfo($id, $data);
+            $user = User::find($id);
+            if ($user) {
+                $success = $user->update([
+                    'username' => $data['username'] ?? '',
+                    'name'     => $data['name'],
+                    'email'    => $data['email'],
+                    'role'     => $request->input('role', 'user'),
+                ]);
+            } else {
+                $success = false;
+            }
 
             if ($success) {
                 if ($request->ajax()) {
@@ -154,6 +189,7 @@ class UserController extends Controller
 
     public function delete(Request $request)
     {
+        Gate::authorize('isSuperAdmin');
         $id = $request->input('id');
 
         if (!$id) {
@@ -166,7 +202,8 @@ class UserController extends Controller
             return back()->with('error', 'User ID missing');
         }
 
-        if (User::softDeleteUser($id)) {
+        $user = User::find($id);
+        if ($user && $user->delete()) {
             if ($request->ajax()) {
                 return response()->json([
                     'status' => 'success',

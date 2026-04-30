@@ -55,7 +55,7 @@ class ServiceController extends Controller
         $data = $request->only(['service_name', 'price', 'status']);
 
         try {
-            Service::createService($data);
+            Service::create($data);
 
             return response()->json([
                 'status' => 'success',
@@ -75,7 +75,7 @@ class ServiceController extends Controller
             return redirect('/services');
         }
 
-        $service = Service::getById($id);
+        $service = Service::find($id);
 
         if (!$service) {
             return redirect('/services')->with('error', 'Service not found!');
@@ -107,7 +107,10 @@ class ServiceController extends Controller
         $data = $request->only(['service_name', 'price', 'status']);
 
         try {
-            Service::updateService($id, $data);
+            $service = Service::find($id);
+            if ($service) {
+                $service->update($data);
+            }
             return response()->json([
                 'status' => 'success', 
                 'message' => 'Service updated successfully'
@@ -137,7 +140,8 @@ class ServiceController extends Controller
             ]);
         }
 
-        if (Service::softDeleteService($id)) {
+        $service = Service::find($id);
+        if ($service && $service->delete()) {
             return response()->json([
                 'status' => 'success',
                 'message' => 'Service deleted successfully'

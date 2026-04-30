@@ -25,81 +25,24 @@ class Reservation extends Model
         'status',
     ];
 
-    /** Get all reservations optionally filtered by user */
-    public static function getReservations($start = 0, $length = 10, $search = '', $orderColumn = 'r.id', $orderDir = 'ASC')
+    /** Relationships */
+    public function user()
     {
-        $query = DB::table('reservations as r')
-            ->select(
-                'r.id', 'r.hotel_code', 'r.room_id', 'r.check_in', 'r.check_out', 'r.status',
-                'u.email as email', 'h.hotel_name', 'd.discount_name'
-            )
-            ->leftJoin('users as u', 'r.user_id', '=', 'u.id')
-            ->leftJoin('hotels as h', 'r.hotel_id', '=', 'h.id')
-            ->leftJoin('discounts as d', 'r.discount_id', '=', 'd.id')
-            ->whereNull('r.deleted_at');
-
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('r.hotel_code', 'like', "%{$search}%")
-                  ->orWhere('u.email', 'like', "%{$search}%")
-                  ->orWhere('h.hotel_name', 'like', "%{$search}%")
-                  ->orWhere('d.discount_name', 'like', "%{$search}%");
-            });
-        }
-
-        $totalFiltered = $query->count();
-
-        $data = $query->orderBy($orderColumn, $orderDir)
-                      ->offset($start)
-                      ->limit($length)
-                      ->get()
-                      ->toArray();
-
-        return ['data' => $data, 'recordsFiltered' => $totalFiltered];
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public static function countAllReservations()
+    public function hotel()
     {
-        return self::count();
+        return $this->belongsTo(Hotel::class, 'hotel_id');
     }
 
-    public static function getReservationById($id)
+    public function room()
     {
-        return DB::table('reservations as r')
-            ->select('r.*', 'u.email as email', 'h.hotel_name', 'd.discount_name')
-            ->leftJoin('users as u', 'r.user_id', '=', 'u.id')
-            ->leftJoin('hotels as h', 'r.hotel_id', '=', 'h.id')
-            ->leftJoin('discounts as d', 'r.discount_id', '=', 'd.id')
-            ->where('r.id', $id)
-            ->whereNull('r.deleted_at')
-            ->first();
+        return $this->belongsTo(Room::class, 'room_id');
     }
 
-    /** Insert new reservation */
-    public static function createReservation(array $data)
+    public function discount()
     {
-        return self::create($data);
-    }
-
-    /** Update reservation by ID */
-    public static function updateReservation($id, array $data)
-    {
-        return self::where('id', $id)->update($data);
-    }
-
-    /** Soft delete reservation by ID */
-    public static function softDeleteById($id)
-    {
-        return self::where('id', $id)->delete();
-    }
-
-    /** Get all rooms (active only) */
-    public static function getAllRooms()
-    {
-        return DB::table('rooms')
-            ->select('id')
-            ->whereNull('deleted_at')
-            ->get()
-            ->toArray();
+        return $this->belongsTo(Discount::class, 'discount_id');
     }
 }
