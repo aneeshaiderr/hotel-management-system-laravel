@@ -5,7 +5,6 @@ use App\Http\Controllers\Contact;
 use App\Http\Controllers\Home;
 use App\Http\Controllers\News;
 use App\Http\Controllers\Room;
-// use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -18,11 +17,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\HotelController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\ReservationController;
 
 use Illuminate\Support\Facades\Auth;
-// Route::get('/register', [RegisteredUserController::class, 'store'])
-//     ->middleware('guest')
-//     ->name('register');
+
 Route::get('register', [RegisteredUserController::class, 'create'])->middleware('guest')->name('register');
 
 Route::post('/register', [RegisteredUserController::class, 'store'])
@@ -94,39 +94,37 @@ Route::middleware('auth')->group(function () {
     Route::post('/service/delete', [ServiceController::class, 'delete'])->name('dashboard.service.delete');
 
     // Hotels CRUD
-    Route::get('/hotel', [\App\Http\Controllers\HotelController::class, 'index'])->name('dashboard.hotel');
-    Route::get('/hotel/datatable', [\App\Http\Controllers\HotelController::class, 'datatable'])->name('dashboard.hotel.datatable');
-    Route::get('/hotel/create', [\App\Http\Controllers\HotelController::class, 'create'])->name('dashboard.hotel.create');
-    Route::post('/hotel/store', [\App\Http\Controllers\HotelController::class, 'store'])->name('dashboard.hotel.store');
-    Route::get('/hotel/edit/{id}', [\App\Http\Controllers\HotelController::class, 'edit'])->name('dashboard.hotel.edit');
-    Route::post('/hotel/update', [\App\Http\Controllers\HotelController::class, 'update'])->name('dashboard.hotel.update');
-    Route::post('/hotel/delete', [\App\Http\Controllers\HotelController::class, 'delete'])->name('dashboard.hotel.delete');
+    Route::get('/hotel', [HotelController::class, 'index'])->name('dashboard.hotel');
+    Route::get('/hotel/datatable', [HotelController::class, 'datatable'])->name('dashboard.hotel.datatable');
+    Route::get('/hotel/create', [HotelController::class, 'create'])->name('dashboard.hotel.create');
+    Route::post('/hotel/store', [HotelController::class, 'store'])->name('dashboard.hotel.store');
+    Route::get('/hotel/edit/{id}', [HotelController::class, 'edit'])->name('dashboard.hotel.edit');
+    Route::post('/hotel/update', [HotelController::class, 'update'])->name('dashboard.hotel.update');
+    Route::post('/hotel/delete', [HotelController::class, 'delete'])->name('dashboard.hotel.delete');
 
     // Discounts CRUD
-    Route::get('/discount', [\App\Http\Controllers\DiscountController::class, 'index'])->name('dashboard.discount');
-    Route::get('/discount/datatable', [\App\Http\Controllers\DiscountController::class, 'datatable'])->name('dashboard.discount.datatable');
-    Route::get('/discount/create', [\App\Http\Controllers\DiscountController::class, 'create'])->name('dashboard.discount.create');
-    Route::post('/discount/store', [\App\Http\Controllers\DiscountController::class, 'store'])->name('dashboard.discount.store');
-    Route::get('/discount/edit/{id}', [\App\Http\Controllers\DiscountController::class, 'edit'])->name('dashboard.discount.edit');
-    Route::post('/discount/update', [\App\Http\Controllers\DiscountController::class, 'update'])->name('dashboard.discount.update');
-    Route::post('/discount/delete', [\App\Http\Controllers\DiscountController::class, 'delete'])->name('dashboard.discount.delete');
+    Route::get('/discount', [DiscountController::class, 'index'])->name('dashboard.discount');
+    Route::get('/discount/datatable', [DiscountController::class, 'datatable'])->name('dashboard.discount.datatable');
+    Route::get('/discount/create', [DiscountController::class, 'create'])->name('dashboard.discount.create');
+    Route::post('/discount/store', [DiscountController::class, 'store'])->name('dashboard.discount.store');
+    Route::get('/discount/edit/{id}', [DiscountController::class, 'edit'])->name('dashboard.discount.edit');
+    Route::post('/discount/update', [DiscountController::class, 'update'])->name('dashboard.discount.update');
+    Route::post('/discount/delete', [DiscountController::class, 'delete'])->name('dashboard.discount.delete');
 
     Route::view('/analytics', 'dashboard.page', ['title' => 'Analytics'])->name('dashboard.analytics');
     Route::view('/setting', 'dashboard.page', ['title' => 'Settings'])->name('dashboard.setting');
     // Reservations CRUD
-    Route::get('/reservation', [\App\Http\Controllers\ReservationController::class, 'index'])->name('dashboard.reservation');
-    Route::get('/reservation/datatable', [\App\Http\Controllers\ReservationController::class, 'datatable'])->name('dashboard.reservation.datatable');
-    Route::get('/reservation/create', [\App\Http\Controllers\ReservationController::class, 'create'])->name('dashboard.reservation.create');
-    Route::post('/reservation/store', [\App\Http\Controllers\ReservationController::class, 'store'])->name('dashboard.reservation.store');
-    Route::get('/reservation/edit/{id}', [\App\Http\Controllers\ReservationController::class, 'edit'])->name('dashboard.reservation.edit');
-    Route::post('/reservation/update', [\App\Http\Controllers\ReservationController::class, 'update'])->name('dashboard.reservation.update');
-    Route::post('/reservation/delete', [\App\Http\Controllers\ReservationController::class, 'delete'])->name('dashboard.reservation.delete');
+    Route::get('/reservation', [ReservationController::class, 'index'])->name('dashboard.reservation');
+    Route::get('/reservation/datatable', [ReservationController::class, 'datatable'])->name('dashboard.reservation.datatable');
+    Route::get('/reservation/create', [ReservationController::class, 'create'])->name('dashboard.reservation.create');
+    Route::post('/reservation/store', [ReservationController::class, 'store'])->name('dashboard.reservation.store');
+    Route::get('/reservation/edit/{id}', [ReservationController::class, 'edit'])->name('dashboard.reservation.edit');
+    Route::post('/reservation/update', [ReservationController::class, 'update'])->name('dashboard.reservation.update');
+    Route::post('/reservation/delete', [ReservationController::class, 'delete'])->name('dashboard.reservation.delete');
     Route::view('/payment', 'dashboard.page', ['title' => 'Payments'])->name('dashboard.payment');
     Route::view('/permission', 'dashboard.page', ['title' => 'Permissions'])->name('dashboard.permission');
 });
-// Route::get('/', function () {
-//     return view('Home');
-// });
+
 // frontend
 Route::get('/', [Home::class ,'index']);
 Route::get('/room', [Room::class ,'index']);
